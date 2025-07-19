@@ -31,7 +31,7 @@ The Celebrity Image Blocker is a Chrome extension designed to enhance your brows
 5. **Monitoring**: Blocked images are replaced with notification blocks showing which celebrity was detected.
 
 ## Screenshots
-![Options Page](screenshots/image-db.png)
+![Options Page](screenshots/image-settings.png)
 
 ![Blocked Image Example](screenshots/main-example-search.png)
 
