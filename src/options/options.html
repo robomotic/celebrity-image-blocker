@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celebrity Face Database - Celebrity Image Blocker</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎭 Celebrity Face Database</h1>
+            <p>Manage the faces that will be blocked on web pages</p>
+        </header>
+
+        <div class="add-face-section">
+            <h2>Add New Faces</h2>
+            <div class="upload-options">
+                <div class="upload-method">
+                    <h3>📁 Upload from Files</h3>
+                    <div class="upload-section">
+                        <input type="file" id="file-upload" accept="image/*" multiple>
+                        <button id="upload-button">Upload Selected Files</button>
+                    </div>
+                </div>
+
+                <div class="upload-method">
+                    <h3>🌐 Add from URL</h3>
+                    <div class="url-section">
+                        <input type="url" id="url-input" placeholder="https://example.com/image.jpg">
+                        <button id="add-from-url">Add from URL</button>
+                    </div>
+                    <p class="help-text">
+                        Try these working URLs:<br>
+                        • https://via.placeholder.com/300x300.jpg<br>
+                        • https://picsum.photos/300/300
+                    </p>
+                </div>
+            </div>
+        </div>
+
+                <!-- Face Database Management -->
+        <div class="management-section">
+            <div class="actions-header">
+                <h2>Face Database</h2>
+                <div class="actions">
+                    <button id="select-all-button">Select All</button>
+                    <button id="clear-selected-button" class="danger-button">Delete Selected</button>
+                    <button id="clear-all-button" class="danger-button">Clear All</button>
+                </div>
+            </div>
+
+            <div class="database-stats">
+                <span id="face-count-display">0 faces stored</span>
+                <span id="storage-size">Storage: 0 KB</span>
+            </div>
+
+            <div id="status" class="status"></div>
+
+            <div class="celebrity-section">
+                <div id="celebrity-table-container">
+                    <table id="celebrity-table">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" id="select-all-checkbox">
+                                </th>
+                                <th class="thumbnail-col">Thumbnail</th>
+                                <th class="filename-col">Filename</th>
+                                <th class="type-col">Type</th>
+                                <th class="size-col">Size</th>
+                                <th class="action-col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="celebrity-list">
+                            <tr class="no-images">
+                                <td colspan="6">No celebrity faces added yet. Upload some images above to get started!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Alternative loading method for face-api.js
+        if (typeof faceapi === 'undefined') {
+            console.log('Loading face-api.js...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+            script.onload = () => console.log('✅ Face-api.js loaded via alternative method');
+            script.onerror = () => console.warn('⚠️ Could not load face-api.js - face detection will be disabled');
+            document.head.appendChild(script);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="options.js"></script>
+</body>
+</html>

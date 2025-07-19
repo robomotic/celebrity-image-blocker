@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celebrity Image Blocker</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div id="popup-container">
+        <h1>Celebrity Image Blocker</h1>
+        <p>Block celebrity images on web pages using face recognition.</p>
+        
+        <div class="main-controls">
+            <div class="toggle-section">
+                <span class="toggle-label">Enable Face Blocking</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="enable-blocking" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <button id="manage-faces-button" class="primary-button">
+                Manage Celebrity Faces (1)
+            </button>
+            
+            <button id="check-compute-button" class="secondary-button">
+                Check Compute Resources
+            </button>
+        </div>
+
+        <div class="settings-section">
+            <h3>Settings</h3>
+            <div class="setting-item">
+                <span class="setting-label">Max Scans</span>
+                <input type="number" id="max-scans" min="1" max="100" value="10" class="setting-input">
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Min Size (pixels)</span>
+                <input type="number" id="min-size" min="50" max="1000" value="200" class="setting-input">
+            </div>
+        </div>
+        
+        <div class="status-section">
+            <div id="face-count">0 faces in database</div>
+            <div id="status"></div>
+        </div>
+
+        <div class="about-section">
+            <h3>About</h3>
+            <div class="about-info">
+                <div>Author: <a href="https://github.com/robomotic" target="_blank">github.com/robomotic</a></div>
+                <div>Version: 1.0</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
