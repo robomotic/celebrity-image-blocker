@@ -9,6 +9,7 @@ if (typeof faceapi === 'undefined') {
 }
 
 let isBlockingEnabled = true;
+let modelsLoaded = false;
 
 // Initialize the extension when the page loads
 async function initializeExtension() {
@@ -39,19 +40,28 @@ async function initializeExtension() {
             return;
         }
         
-        // Wait for face-api models to load
-        console.log('📦 Loading face-api models...');
-        await window.FaceMatcher.loadModels();
-        console.log('✅ Face-api models loaded successfully');
+        // Don't load models immediately - wait until we actually need them
+        console.log('🔄 Extension ready. Models will be loaded on-demand when images are detected.');
         
-        // Block existing images
-        console.log('🖼️ Scanning existing images...');
-        await window.FaceMatcher.blockMatchingImages();
+        // Check if there are images on the page
+        const images = document.querySelectorAll('img[src]');
+        if (images.length > 0) {
+            console.log(`🖼️ Found ${images.length} images on page. Loading models...`);
+            
+            // Load models only when needed
+            await loadModelsIfNeeded();
+            
+            // Block existing images
+            console.log('🖼️ Scanning existing images...');
+            await window.FaceMatcher.blockMatchingImages();
+        } else {
+            console.log('📷 No images found on initial load. Models will load when images appear.');
+        }
         
         // Set up observer for dynamically added images
         setupImageObserver();
         
-        console.log('✅ Celebrity Image Blocker fully initialized');
+        console.log('✅ Celebrity Image Blocker initialized');
     } catch (error) {
         console.error('❌ Error initializing Celebrity Image Blocker:', error);
         
@@ -65,6 +75,21 @@ async function initializeExtension() {
         } catch (bgError) {
             console.error('❌ Could not report error to background script:', bgError);
         }
+    }
+}
+
+// Load models only when needed
+async function loadModelsIfNeeded() {
+    if (modelsLoaded) return;
+    
+    try {
+        console.log('📦 Loading face-api models from CDN...');
+        await window.FaceMatcher.loadModels();
+        modelsLoaded = true;
+        console.log('✅ Face-api models loaded successfully');
+    } catch (error) {
+        console.error('❌ Failed to load models:', error);
+        throw error;
     }
 }
 
@@ -105,6 +130,8 @@ function setupImageObserver() {
             // Add a small delay to let images load
             setTimeout(async () => {
                 try {
+                    // Load models if not already loaded
+                    await loadModelsIfNeeded();
                     await window.FaceMatcher.blockMatchingImages();
                 } catch (error) {
                     console.error('❌ Error processing new images:', error);

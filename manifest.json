@@ -1,23 +1,22 @@
 {
   "manifest_version": 3,
   "name": "Celebrity Image Blocker",
-  "version": "1.0",
-  "description": "A Chrome extension that blocks images of specified celebrities on web pages.",
+  "version": "1.1",
+  "description": "A Chrome extension that blocks images of specified celebrities on web pages using AI face recognition.",
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting"
+    "storage"
   ],
   "host_permissions": [
-    "<all_urls>",
-    "https://cdn.jsdelivr.net/*"
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "src/background/background.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://*/*", "http://*/*"],
       "js": [
         "src/lib/face-api.min.js",
         "src/utils/storage.js",
@@ -47,10 +46,12 @@
     {
       "resources": [
         "src/lib/face-api.min.js",
-        "src/utils/*.js",
-        "src/models/*"
+        "src/utils/*.js"
       ],
-      "matches": ["<all_urls>"]
+      "matches": ["https://*/*", "http://*/*"]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' https://cdn.jsdelivr.net; object-src 'self'"
+  }
 }

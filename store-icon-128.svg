@@ -1,0 +1,51 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with gradient -->
+  <defs>
+    <radialGradient id="bgGradient" cx="0.3" cy="0.3">
+      <stop offset="0%" stop-color="#e74c3c"/>
+      <stop offset="100%" stop-color="#c0392b"/>
+    </radialGradient>
+  </defs>
+  
+  <circle cx="64" cy="64" r="60" fill="url(#bgGradient)" filter="url(#shadow)"/>
+  
+  <!-- Inner circle -->
+  <circle cx="64" cy="64" r="50" fill="#ffffff" stroke="#ddd" stroke-width="1"/>
+  
+  <!-- Face elements -->
+  <!-- Head shape -->
+  <circle cx="64" cy="58" r="25" fill="none" stroke="#2c3e50" stroke-width="3"/>
+  
+  <!-- Eyes (X marks to show blocking) -->
+  <g stroke="#e74c3c" stroke-width="3" stroke-linecap="round">
+    <line x1="54" y1="48" x2="62" y2="56"/>
+    <line x1="62" y1="48" x2="54" y2="56"/>
+    <line x1="66" y1="48" x2="74" y2="56"/>
+    <line x1="74" y1="48" x2="66" y2="56"/>
+  </g>
+  
+  <!-- Nose -->
+  <circle cx="64" cy="60" r="2" fill="#2c3e50"/>
+  
+  <!-- Mouth (frown) -->
+  <path d="M56 68 Q64 74 72 68" stroke="#2c3e50" stroke-width="2" fill="none"/>
+  
+  <!-- Large X overlay with gradient -->
+  <defs>
+    <linearGradient id="xGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e74c3c"/>
+      <stop offset="100%" stop-color="#c0392b"/>
+    </linearGradient>
+  </defs>
+  
+  <g stroke="url(#xGradient)" stroke-width="8" stroke-linecap="round" filter="url(#shadow)">
+    <line x1="20" y1="20" x2="108" y2="108"/>
+    <line x1="108" y1="20" x2="20" y2="108"/>
+  </g>
+</svg>

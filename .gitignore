@@ -149,3 +149,6 @@ ENV/
 
 # Project specific ignores
 # Add any project-specific files you don't want to track
+README.md
+CHROME_STORE_SUBMISSION_GUIDE.md
+remove-models.sh

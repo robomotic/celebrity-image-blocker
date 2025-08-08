@@ -2,55 +2,46 @@
 let modelsLoaded = false;
 let modelLoadingPromise = null;
 
-// Load face-api models
+// Load face-api models from CDN only
 async function loadModels() {
     if (modelsLoaded) return;
     if (modelLoadingPromise) return modelLoadingPromise;
     
     modelLoadingPromise = (async () => {
         try {
-            console.log('Loading face-api models...');
+            console.log('🌐 Loading face-api models from CDN...');
             
-            // Use local model files from the extension
-            const extensionUrl = chrome.runtime.getURL('');
-            const modelPath = extensionUrl + 'src/models';
-            console.log('Extension URL:', extensionUrl);
-            console.log('Model Path:', modelPath);
+            // Use CDN models to reduce extension size
+            const cdnPath = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model';
+            console.log('CDN path:', cdnPath);
             
             // Load required models sequentially with error handling
             console.log('Loading SSD MobileNet v1...');
-            await faceapi.nets.ssdMobilenetv1.loadFromUri(modelPath);
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(cdnPath);
             
             console.log('Loading Face Landmark 68 Net...');
-            await faceapi.nets.faceLandmark68Net.loadFromUri(modelPath);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(cdnPath);
             
             console.log('Loading Face Recognition Net...');
-            await faceapi.nets.faceRecognitionNet.loadFromUri(modelPath);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(cdnPath);
             
             modelsLoaded = true;
-            console.log('✅ All face-api models loaded successfully');
+            console.log('✅ All face-api models loaded successfully from CDN');
+            
+            // Cache the models in browser cache for faster subsequent loads
+            console.log('📦 Models are now cached in browser for faster future loads');
+            
             return true;
         } catch (error) {
-            console.error('❌ Error loading face-api models:', error);
-            console.log('🔄 Falling back to CDN models...');
+            console.error('❌ Error loading face-api models from CDN:', error);
+            modelsLoaded = false;
+            modelLoadingPromise = null;
             
-            // Fallback to CDN if local files fail
-            try {
-                const cdnPath = 'https://justadudewhohacks.github.io/face-api.js/models';
-                console.log('Trying CDN path:', cdnPath);
-                
-                await faceapi.nets.ssdMobilenetv1.loadFromUri(cdnPath);
-                await faceapi.nets.faceLandmark68Net.loadFromUri(cdnPath);
-                await faceapi.nets.faceRecognitionNet.loadFromUri(cdnPath);
-                
-                modelsLoaded = true;
-                console.log('✅ Models loaded from CDN fallback');
-                return true;
-            } catch (cdnError) {
-                console.error('❌ CDN fallback also failed:', cdnError);
-                modelsLoaded = false;
-                modelLoadingPromise = null;
-                throw new Error('Failed to load models from both local and CDN sources');
+            // Provide helpful error message
+            if (error.message.includes('Failed to fetch')) {
+                throw new Error('Unable to load face detection models. Please check your internet connection.');
+            } else {
+                throw new Error(`Failed to load face detection models: ${error.message}`);
             }
         }
     })();
