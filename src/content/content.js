@@ -1,26 +1,20 @@
 // Content script for celebrity image blocking
 console.log('🚀 Celebrity Image Blocker content script loaded on:', window.location.href);
 
-// Check if face-api is available
-if (typeof faceapi === 'undefined') {
-    console.error('❌ face-api.js not loaded! This is a critical error.');
-} else {
-    console.log('✅ face-api.js is available');
-}
-
 let isBlockingEnabled = true;
-let modelsLoaded = false;
+// Note: modelsLoaded is declared in face-matcher.js
 
 // Initialize the extension when the page loads
 async function initializeExtension() {
     try {
         console.log('🔄 Initializing Celebrity Image Blocker...');
         
-        // Check if face-api is available
+        // Check if face-api is available (should be loaded via manifest)
         if (typeof faceapi === 'undefined') {
-            throw new Error('face-api.js is not loaded');
+            throw new Error('face-api.js library not loaded');
         }
-
+        console.log('✅ face-api.js library is available');
+        
         // Load blocking settings
         const settings = await chrome.storage.local.get(['blockingEnabled']);
         isBlockingEnabled = settings.blockingEnabled !== false; // Default to true
@@ -80,12 +74,14 @@ async function initializeExtension() {
 
 // Load models only when needed
 async function loadModelsIfNeeded() {
-    if (modelsLoaded) return;
-    
     try {
-        console.log('📦 Loading face-api models from CDN...');
-        await window.FaceMatcher.loadModels();
-        modelsLoaded = true;
+        // Check if face-api is available
+        if (typeof faceapi === 'undefined') {
+            throw new Error('face-api.js library not available');
+        }
+        
+        console.log('📦 Loading face-api models...');
+        await window.FaceMatcher.loadModels(); // This function handles the modelsLoaded check internally
         console.log('✅ Face-api models loaded successfully');
     } catch (error) {
         console.error('❌ Failed to load models:', error);
@@ -96,11 +92,11 @@ async function loadModelsIfNeeded() {
 // Set up MutationObserver to watch for new images
 function setupImageObserver() {
     if (!isBlockingEnabled) {
-        console.log('� Image observer skipped - blocking disabled');
+        console.log('⏭️ Image observer skipped - blocking disabled');
         return;
     }
     
-    console.log('�👀 Setting up image observer...');
+    console.log('👀 Setting up image observer...');
     
     const observer = new MutationObserver(async (mutations) => {
         if (!isBlockingEnabled) return; // Skip if disabled
@@ -176,7 +172,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     
     if (message.action === 'getStatus') {
-        sendResponse({ 
+        sendResponse({
             enabled: isBlockingEnabled,
             url: window.location.href,
             faceApiLoaded: typeof faceapi !== 'undefined'
@@ -190,6 +186,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Handle async operation properly
         (async () => {
             try {
+                // Check if face-api library is available
+                if (typeof faceapi === 'undefined') {
+                    sendResponse({
+                        success: false,
+                        error: 'face-api.js library not available'
+                    });
+                    return;
+                }
+                
                 if (typeof window.FaceMatcher === 'undefined') {
                     console.log('❌ FaceMatcher not available, checking if scripts loaded...');
                     
@@ -197,9 +202,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     if (typeof window.FaceMatcher === 'undefined') {
-                        sendResponse({ 
-                            success: false, 
-                            error: 'Face detection not available on this page. Scripts may not be loaded.' 
+                        sendResponse({
+                            success: false,
+                            error: 'Face detection not available on this page. Scripts may not be loaded.'
                         });
                         return;
                     }

@@ -42,7 +42,8 @@ cp manifest.json "$PACKAGE_DIR/"
 # Copy icons directory
 cp -r icons/ "$PACKAGE_DIR/"
 
-# Copy src directory (all source code)
+# Copy src directory (including face-api.js library)
+echo -e "${YELLOW}📁 Copying source files...${NC}"
 cp -r src/ "$PACKAGE_DIR/"
 
 # Copy privacy policy HTML (required for store)
@@ -104,10 +105,13 @@ echo "3. Complete the store listing with screenshots and descriptions"
 echo ""
 echo -e "${YELLOW}Files excluded (documentation/development):${NC}"
 echo "  • README.md"
+echo "  • PRIVACY_POLICY.md (Markdown version)"
 echo "  • screenshots/"
 echo "  • .git/"
+echo "  • .gitignore"
 echo "  • CHROME_STORE_SUBMISSION_GUIDE.md"
 echo "  • package-extension.sh"
-echo "  • *.svg icon templates"
+echo "  • remove-models.sh"
+echo "  • *.svg icon templates (icon_*.svg)"
 echo "  • store-icon-* files"
 echo ""

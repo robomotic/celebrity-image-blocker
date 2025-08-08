@@ -45,13 +45,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "src/lib/face-api.min.js",
         "src/utils/*.js"
       ],
       "matches": ["https://*/*", "http://*/*"]
     }
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' https://cdn.jsdelivr.net; object-src 'self'"
-  }
+  ]
 }

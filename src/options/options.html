@@ -83,18 +83,6 @@
         </div>
     </div>
 
-    <script>
-        // Alternative loading method for face-api.js
-        if (typeof faceapi === 'undefined') {
-            console.log('Loading face-api.js...');
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
-            script.onload = () => console.log('✅ Face-api.js loaded via alternative method');
-            script.onerror = () => console.warn('⚠️ Could not load face-api.js - face detection will be disabled');
-            document.head.appendChild(script);
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="options.js"></script>
 </body>
 </html>

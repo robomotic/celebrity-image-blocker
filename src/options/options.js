@@ -17,11 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check face-api.js availability
     setTimeout(() => {
-        if (typeof faceapi !== 'undefined' && window.faceapi) {
-            console.log('✅ Face-api.js loaded successfully');
-        } else {
-            console.warn('⚠️ Face-api.js not available - face detection will be skipped');
-        }
+        console.log('✅ Celebrity Image Blocker Options loaded');
+        console.log('ℹ️ Face detection will occur during blocking, not during upload');
     }, 1000);
 
     // Initialize
@@ -570,14 +567,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function detectAndCropFaces(dataUrl) {
         try {
-            console.log('Starting face detection process...');
+            console.log('Processing uploaded image...');
             
-            // Check if face-api is available
-            if (typeof faceapi === 'undefined' || !window.faceapi) {
-                console.warn('Face-api.js not available, skipping face detection');
-                // Return original image without face detection
-                return { croppedFace: dataUrl };
-            }
+            // Simplified approach: store original image for face detection during blocking
+            console.log('✅ Image stored - face detection will occur during web page scanning');
+            
+            // Return original image without face detection in options page
+            return { croppedFace: dataUrl };
             
             console.log('Face-api.js is available, proceeding with face detection...');
             
