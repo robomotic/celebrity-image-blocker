@@ -119,13 +119,13 @@ We may update this privacy policy from time to time. Any changes will be reflect
 
 ## Open Source and Transparency
 
-This extension is open source, and you can review the complete source code to verify our privacy practices. The code is available at: [GitHub Repository URL]
+This extension is open source, and you can review the complete source code to verify our privacy practices. The code is available at: [github.com/robomotic](https://github.com/robomotic/celebrity-image-blocker)
 
 ## Contact Information
 
 If you have questions about this privacy policy or the extension's data practices, please contact us:
 
-- **GitHub:** [github.com/robomotic](https://github.com/robomotic)
+- **GitHub:** [github.com/robomotic](https://github.com/robomotic/celebrity-image-blocker)
 - **Issues:** Report privacy concerns through our GitHub issues page
 
 ## Legal Compliance

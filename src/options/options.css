@@ -312,6 +312,33 @@ button:active {
     font-size: 16px;
 }
 
+/* Cache management styles */
+.cache-stats {
+    margin-bottom: 20px;
+}
+
+.cache-info {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.cache-info span {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cache-description {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    line-height: 1.4;
+}
+
 @media (max-width: 768px) {
     .upload-options {
         grid-template-columns: 1fr;

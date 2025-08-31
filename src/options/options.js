@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearAllButton = document.getElementById('clear-all-button');
     const faceCountDisplay = document.getElementById('face-count-display');
     const storageSizeDisplay = document.getElementById('storage-size');
+    const refreshCacheStatsButton = document.getElementById('refresh-cache-stats');
+    const clearCacheButton = document.getElementById('clear-cache-button');
+    const cacheEntriesDisplay = document.getElementById('cache-entries');
+    const cacheSizeDisplay = document.getElementById('cache-size');
+    const cachePerformanceDisplay = document.getElementById('cache-performance');
 
     let selectedImages = new Set();
     let allImages = [];
@@ -26,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function init() {
         await loadImages();
+        await updateCacheStats();
         setupEventListeners();
     }
 
@@ -55,6 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectAllCheckbox) {
             selectAllCheckbox.addEventListener('change', toggleSelectAll);
         }
+
+        // Cache management
+        refreshCacheStatsButton.addEventListener('click', updateCacheStats);
+        clearCacheButton.addEventListener('click', clearCache);
     }
 
     async function loadImages() {
@@ -696,5 +706,48 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             status.style.display = 'none';
         }, 5000);
+    }
+
+    // Cache management functions
+    async function updateCacheStats() {
+        try {
+            if (!window.ImageCache) {
+                console.log('ImageCache not available');
+                return;
+            }
+
+            const stats = await window.ImageCache.getCacheStats();
+            
+            cacheEntriesDisplay.textContent = `${stats.totalEntries} cached images`;
+            cacheSizeDisplay.textContent = `Size: ${stats.sizeMB} MB`;
+            cachePerformanceDisplay.textContent = `${stats.totalWithFaces} with faces, ${stats.totalWithMatches} with matches`;
+            
+            console.log('Cache stats updated:', stats);
+        } catch (error) {
+            console.error('Error updating cache stats:', error);
+            cacheEntriesDisplay.textContent = 'Error loading stats';
+            cacheSizeDisplay.textContent = 'Size: Unknown';
+            cachePerformanceDisplay.textContent = 'Performance: Unknown';
+        }
+    }
+
+    async function clearCache() {
+        try {
+            if (!window.ImageCache) {
+                showStatus('Cache system not available', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to clear the performance cache? This will remove all cached image analysis results.')) {
+                return;
+            }
+
+            await window.ImageCache.clearCache();
+            await updateCacheStats();
+            showStatus('Cache cleared successfully', 'success');
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+            showStatus('Error clearing cache', 'error');
+        }
     }
 });

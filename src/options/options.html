@@ -81,6 +81,29 @@
                 </div>
             </div>
         </div>
+
+        <!-- Cache Management Section -->
+        <div class="management-section">
+            <div class="actions-header">
+                <h2>Performance Cache</h2>
+                <div class="actions">
+                    <button id="refresh-cache-stats">Refresh Stats</button>
+                    <button id="clear-cache-button" class="danger-button">Clear Cache</button>
+                </div>
+            </div>
+
+            <div class="cache-stats">
+                <div class="cache-info">
+                    <span id="cache-entries">0 cached images</span>
+                    <span id="cache-size">Size: 0 MB</span>
+                    <span id="cache-performance">0 with faces, 0 with matches</span>
+                </div>
+                <p class="cache-description">
+                    The cache stores analysis results to speed up repeated visits to the same images. 
+                    It automatically manages size (max 100 MB) and expires old entries after 7 days.
+                </p>
+            </div>
+        </div>
     </div>
 
     <script src="options.js"></script>

@@ -36,8 +36,16 @@
                 <input type="number" id="max-scans" min="1" max="100" value="10" class="setting-input">
             </div>
             <div class="setting-item">
-                <span class="setting-label">Min Size (pixels)</span>
-                <input type="number" id="min-size" min="50" max="1000" value="200" class="setting-input">
+                <span class="setting-label">Min Width (px)</span>
+                <input type="number" id="min-width" min="50" max="1000" value="200" class="setting-input">
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Min Height (px)</span>
+                <input type="number" id="min-height" min="50" max="1000" value="200" class="setting-input">
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Similarity Threshold</span>
+                <input type="number" id="similarity-threshold" min="0.1" max="1.0" step="0.1" value="0.6" class="setting-input" title="Lower values = more strict matching (fewer false positives). Higher values = more lenient matching (more detections).">
             </div>
         </div>
         
@@ -50,7 +58,7 @@
             <h3>About</h3>
             <div class="about-info">
                 <div>Author: <a href="https://github.com/robomotic" target="_blank">github.com/robomotic</a></div>
-                <div>Version: 1.0</div>
+                <div>Version: 1.2</div>
             </div>
         </div>
     </div>

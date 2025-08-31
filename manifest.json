@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Celebrity Image Blocker",
-  "version": "1.1",
+  "version": "1.2",
   "description": "A Chrome extension that blocks images of specified celebrities on web pages using AI face recognition.",
   "permissions": [
     "activeTab",
@@ -20,6 +20,7 @@
       "js": [
         "src/lib/face-api.min.js",
         "src/utils/storage.js",
+        "src/utils/image-cache.js",
         "src/utils/face-matcher.js",
         "src/utils/debug.js",
         "src/content/content.js"

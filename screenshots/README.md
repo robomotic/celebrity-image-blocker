@@ -8,7 +8,9 @@ This folder contains visual examples and screenshots of the Celebrity Image Bloc
    - Enable/Disable toggle
    - Manage Celebrity Faces button
    - Max Scans setting (default: 10)
-   - Min Size setting (default: 200px)
+   - Min Width setting (default: 200px)
+   - Min Height setting (default: 200px)
+   - Similarity Threshold setting (default: 0.6)
    - Check Compute Resources button
    - Face count display
 

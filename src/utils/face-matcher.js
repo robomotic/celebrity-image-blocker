@@ -121,7 +121,7 @@ async function getFaceDescriptor(imageSrc) {
 }
 
 // Check if an image matches any celebrity images
-async function matchFace(inputImageSrc, celebrityImages) {
+async function matchFace(inputImageSrc, celebrityImages, threshold = 0.6) {
     try {
         console.log('🔄 Starting face matching process...');
         console.log('Input image:', inputImageSrc.substring(0, 100) + '...');
@@ -144,9 +144,9 @@ async function matchFace(inputImageSrc, celebrityImages) {
             const celebrityDescriptor = await getFaceDescriptor(celebrityImage.dataUrl);
             if (celebrityDescriptor) {
                 const distance = faceapi.euclideanDistance(inputDescriptor, celebrityDescriptor);
-                console.log(`📏 Face distance: ${distance.toFixed(4)} (threshold: 0.6)`);
+                console.log(`📏 Face distance: ${distance.toFixed(4)} (threshold: ${threshold})`);
                 
-                if (distance < 0.6) { // Threshold for face matching
+                if (distance < threshold) { // Use configurable threshold for face matching
                     console.log('🎯 MATCH FOUND! Blocking image');
                     return { match: true, celebrity: celebrityImage.name, distance: distance };
                 }
@@ -169,11 +169,14 @@ async function blockMatchingImages() {
         console.log('🚀 Starting image blocking process...');
         
         // Load settings
-        const settings = await chrome.storage.local.get(['maxScans', 'minSize']);
+        const settings = await chrome.storage.local.get(['maxScans', 'minWidth', 'minHeight', 'similarityThreshold', 'minSize']);
         const maxScans = settings.maxScans || 10;
-        const minSize = settings.minSize || 200;
+        // Handle migration from old minSize setting
+        const minWidth = settings.minWidth || settings.minSize || 200;
+        const minHeight = settings.minHeight || settings.minSize || 200;
+        const similarityThreshold = settings.similarityThreshold || 0.6;
         
-        console.log(`🔧 Settings: maxScans=${maxScans}, minSize=${minSize}px`);
+        console.log(`🔧 Settings: maxScans=${maxScans}, minWidth=${minWidth}px, minHeight=${minHeight}px, threshold=${similarityThreshold}`);
         
         const celebrityImages = await window.StorageUtils.getCelebrityImages();
         console.log(`📋 Found ${celebrityImages.length} celebrity images in storage`);
@@ -182,6 +185,11 @@ async function blockMatchingImages() {
             console.log('❌ No celebrity images found, skipping blocking');
             return;
         }
+
+        // Generate face database hash for cache validation
+        const currentFaceDbHash = await window.ImageCache.generateFaceDbHash(celebrityImages);
+        await window.ImageCache.storeFaceDbHash(currentFaceDbHash);
+        console.log(`🔑 Face DB hash: ${currentFaceDbHash.substring(0, 8)}...`);
 
         const allImages = document.querySelectorAll('img[src]:not([data-celebrity-checked])');
         console.log(`🖼️ Found ${allImages.length} unchecked images on page`);
@@ -192,7 +200,7 @@ async function blockMatchingImages() {
             const width = img.naturalWidth || img.width || 0;
             const height = img.naturalHeight || img.height || 0;
             
-            if (width >= minSize && height >= minSize) {
+            if (width >= minWidth && height >= minHeight) {
                 validImages.push(img);
                 if (validImages.length >= maxScans) {
                     break;
@@ -200,9 +208,11 @@ async function blockMatchingImages() {
             }
         }
         
-        console.log(`🎯 Processing ${validImages.length} images (filtered by size >= ${minSize}px, limited to ${maxScans})`);
+        console.log(`🎯 Processing ${validImages.length} images (filtered by size >= ${minWidth}x${minHeight}px, limited to ${maxScans})`);
         
         let blockedCount = 0;
+        let cacheHits = 0;
+        let cacheSkips = 0;
         
         for (const img of validImages) {
             try {
@@ -213,40 +223,67 @@ async function blockMatchingImages() {
                 
                 console.log(`🔍 Processing image: ${width}x${height} - ${img.src.substring(0, 50)}...`);
                 
-                const matchResult = await matchFace(img.src, celebrityImages);
-                if (matchResult && matchResult.match) {
-                    // Create a replacement div with info about what was blocked
-                    const blockedDiv = document.createElement('div');
-                    blockedDiv.style.cssText = `
-                        width: ${img.offsetWidth || width}px;
-                        height: ${img.offsetHeight || height}px;
-                        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-                        border: 2px solid #ff4757;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-family: Arial, sans-serif;
-                        font-size: 14px;
-                        font-weight: bold;
-                        text-align: center;
-                        box-sizing: border-box;
-                        position: relative;
-                    `;
-                    blockedDiv.innerHTML = `
-                        <div>
-                            🚫 Celebrity Image Blocked<br>
-                            <small>${matchResult.celebrity}</small>
-                        </div>
-                    `;
+                // Check cache first
+                const cacheResult = await window.ImageCache.shouldProcessImage(img.src, currentFaceDbHash);
+                
+                if (!cacheResult.process) {
+                    console.log(`💨 Cache ${cacheResult.reason}`);
                     
-                    // Replace the image with the blocked div
-                    img.parentNode.replaceChild(blockedDiv, img);
+                    if (cacheResult.shouldBlock) {
+                        // Block image based on cache
+                        const celebrity = cacheResult.matchedCelebrities?.[0] || 'Unknown Celebrity';
+                        await blockImage(img, celebrity, cacheResult.cacheEntry.totalMatches);
+                        blockedCount++;
+                        cacheHits++;
+                        console.log(`🚫 BLOCKED (cache): ${celebrity}`);
+                    } else {
+                        cacheSkips++;
+                        console.log(`✅ Skipped (cache): no matches found previously`);
+                    }
+                    continue;
+                }
+                
+                console.log(`🔄 Processing (${cacheResult.reason})`);
+                
+                // Process image with face detection
+                const matchResult = await matchFace(img.src, celebrityImages, similarityThreshold);
+                
+                let totalFaces = 0;
+                let totalMatches = 0;
+                let matchedCelebrities = [];
+                
+                if (matchResult && matchResult.match) {
+                    totalFaces = 1; // We detected at least one face
+                    totalMatches = 1;
+                    matchedCelebrities = [matchResult.celebrity];
+                    
+                    // Block the image
+                    await blockImage(img, matchResult.celebrity, matchResult.distance);
                     blockedCount++;
                     
                     console.log(`🚫 BLOCKED: ${matchResult.celebrity} (distance: ${matchResult.distance.toFixed(4)})`);
                 } else {
-                    console.log(`✅ Image cleared - no celebrity match found`);
+                    // Try to determine if any faces were detected at all
+                    try {
+                        const descriptor = await getFaceDescriptor(img.src);
+                        totalFaces = descriptor ? 1 : 0;
+                    } catch (error) {
+                        totalFaces = 0; // Assume no faces if error
+                    }
+                    
+                    console.log(`✅ Image cleared - no celebrity match found (faces detected: ${totalFaces})`);
+                }
+                
+                // Store result in cache
+                const imageHash = await window.ImageCache.generateImageHash(img.src);
+                if (imageHash) {
+                    await window.ImageCache.storeCacheEntry(
+                        imageHash, 
+                        totalFaces, 
+                        totalMatches, 
+                        currentFaceDbHash, 
+                        matchedCelebrities
+                    );
                 }
                 
                 // Add small delay to prevent overwhelming the page
@@ -262,6 +299,7 @@ async function blockMatchingImages() {
         remainingImages.forEach(img => img.setAttribute('data-celebrity-checked', 'true'));
         
         console.log(`✅ Image blocking complete. Blocked ${blockedCount} images.`);
+        console.log(`📊 Cache performance: ${cacheHits} hits, ${cacheSkips} skips`);
         
         if (blockedCount > 0) {
             // Show notification
@@ -271,6 +309,40 @@ async function blockMatchingImages() {
     } catch (error) {
         console.error('❌ Error in blockMatchingImages:', error);
     }
+}
+
+// Helper function to block an image
+async function blockImage(img, celebrity, distanceOrCount) {
+    const width = img.naturalWidth || img.width || 0;
+    const height = img.naturalHeight || img.height || 0;
+    
+    // Create a replacement div with info about what was blocked
+    const blockedDiv = document.createElement('div');
+    blockedDiv.style.cssText = `
+        width: ${img.offsetWidth || width}px;
+        height: ${img.offsetHeight || height}px;
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+        border: 2px solid #ff4757;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+        box-sizing: border-box;
+        position: relative;
+    `;
+    
+    const displayText = typeof distanceOrCount === 'number' && distanceOrCount < 1 
+        ? `🚫 Celebrity Image Blocked<br><small>${celebrity}</small>`
+        : `🚫 Celebrity Image Blocked<br><small>${celebrity}</small>`;
+    
+    blockedDiv.innerHTML = `<div>${displayText}</div>`;
+    
+    // Replace the image with the blocked div
+    img.parentNode.replaceChild(blockedDiv, img);
 }
 
 // Check system compute resources for face API

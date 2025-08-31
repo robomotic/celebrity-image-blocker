@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const faceCountDisplay = document.getElementById('face-count');
     const statusDisplay = document.getElementById('status');
     const maxScansInput = document.getElementById('max-scans');
-    const minSizeInput = document.getElementById('min-size');
+    const minWidthInput = document.getElementById('min-width');
+    const minHeightInput = document.getElementById('min-height');
+    const similarityThresholdInput = document.getElementById('similarity-threshold');
     
     // Initialize the popup
     init();
@@ -22,12 +24,26 @@ document.addEventListener('DOMContentLoaded', function () {
             const result = await chrome.storage.local.get([
                 'blockingEnabled', 
                 'maxScans', 
-                'minSize'
+                'minWidth',
+                'minHeight',
+                'similarityThreshold',
+                'minSize' // For migration from old setting
             ]);
+            
+            // Migrate old minSize setting to separate width/height if needed
+            if (result.minSize && (!result.minWidth && !result.minHeight)) {
+                await chrome.storage.local.set({ 
+                    minWidth: result.minSize,
+                    minHeight: result.minSize
+                });
+                console.log(`Migrated old minSize (${result.minSize}) to separate width/height settings`);
+            }
             
             enableCheckbox.checked = result.blockingEnabled !== false; // Default to true
             maxScansInput.value = result.maxScans || 10; // Default to 10
-            minSizeInput.value = result.minSize || 200; // Default to 200
+            minWidthInput.value = result.minWidth || result.minSize || 200; // Default to 200, fallback to old minSize
+            minHeightInput.value = result.minHeight || result.minSize || 200; // Default to 200, fallback to old minSize
+            similarityThresholdInput.value = result.similarityThreshold || 0.6; // Default to 0.6
         } catch (error) {
             console.error('Error loading settings:', error);
         }
@@ -109,20 +125,54 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Min size input
-        minSizeInput.addEventListener('change', async function() {
+        // Min width input
+        minWidthInput.addEventListener('change', async function() {
             try {
                 const value = parseInt(this.value);
                 if (value >= 50 && value <= 1000) {
-                    await chrome.storage.local.set({ minSize: value });
-                    showStatus(`Min size set to ${value}px`, 'success');
+                    await chrome.storage.local.set({ minWidth: value });
+                    showStatus(`Min width set to ${value}px`, 'success');
                 } else {
                     this.value = 200; // Reset to default
-                    showStatus('Min size must be between 50 and 1000 pixels', 'error');
+                    showStatus('Min width must be between 50 and 1000 pixels', 'error');
                 }
             } catch (error) {
-                console.error('Error saving min size:', error);
-                showStatus('Error saving min size', 'error');
+                console.error('Error saving min width:', error);
+                showStatus('Error saving min width', 'error');
+            }
+        });
+
+        // Min height input
+        minHeightInput.addEventListener('change', async function() {
+            try {
+                const value = parseInt(this.value);
+                if (value >= 50 && value <= 1000) {
+                    await chrome.storage.local.set({ minHeight: value });
+                    showStatus(`Min height set to ${value}px`, 'success');
+                } else {
+                    this.value = 200; // Reset to default
+                    showStatus('Min height must be between 50 and 1000 pixels', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving min height:', error);
+                showStatus('Error saving min height', 'error');
+            }
+        });
+
+        // Similarity threshold input
+        similarityThresholdInput.addEventListener('change', async function() {
+            try {
+                const value = parseFloat(this.value);
+                if (value >= 0.1 && value <= 1.0) {
+                    await chrome.storage.local.set({ similarityThreshold: value });
+                    showStatus(`Similarity threshold set to ${value}`, 'success');
+                } else {
+                    this.value = 0.6; // Reset to default
+                    showStatus('Similarity threshold must be between 0.1 and 1.0', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving similarity threshold:', error);
+                showStatus('Error saving similarity threshold', 'error');
             }
         });
     }
